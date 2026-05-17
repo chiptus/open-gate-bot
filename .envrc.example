@@ -1,0 +1,9 @@
+export TELEGRAM_BOT_TOKEN=
+export ADMIN_TELEGRAM_ID=
+
+export GATE_DEVICE_ID=
+export PALGATE_PHONE=
+export PALGATE_TOKEN=
+export PALGATE_TOKEN_TYPE=1
+
+export DB_PATH=./data/bot.db

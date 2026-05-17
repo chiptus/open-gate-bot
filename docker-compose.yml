@@ -1,0 +1,15 @@
+services:
+  bot:
+    build: .
+    container_name: open-gate-bot
+    restart: unless-stopped
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      ADMIN_TELEGRAM_ID: ${ADMIN_TELEGRAM_ID}
+      GATE_DEVICE_ID: ${GATE_DEVICE_ID}
+      PALGATE_PHONE: ${PALGATE_PHONE}
+      PALGATE_TOKEN: ${PALGATE_TOKEN}
+      PALGATE_TOKEN_TYPE: ${PALGATE_TOKEN_TYPE}
+      DB_PATH: /data/bot.db
+    volumes:
+      - ./data:/data
