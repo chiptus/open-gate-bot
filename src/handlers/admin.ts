@@ -1,6 +1,7 @@
 import type { Context } from "grammy";
 import { addUser, listActiveUsers, recentEvents, revokeUser } from "../db.ts";
 import { config } from "../config.ts";
+import { listDevices } from "../palgate/client.ts";
 
 export function isAdmin(ctx: Context): boolean {
   return ctx.from?.id === config.ADMIN_TELEGRAM_ID;
@@ -49,6 +50,28 @@ export async function handleUsers(ctx: Context): Promise<void> {
   }
   const lines = users.map((u) => `• ${u.name} — \`${u.telegram_id}\`${u.username ? ` (@${u.username})` : ""}`);
   await ctx.reply(`Authorized users:\n${lines.join("\n")}`, { parse_mode: "Markdown" });
+}
+
+export async function handleGates(ctx: Context): Promise<void> {
+  if (!requireAdmin(ctx)) return;
+  try {
+    const devices = await listDevices();
+    if (devices.length === 0) {
+      await ctx.reply("No gates returned by Palgate.");
+      return;
+    }
+    const lines = devices.map((d) => {
+      const name = d.name ?? d.address ?? "(unnamed)";
+      const marker = d._id === config.GATE_DEVICE_ID ? " ← configured" : "";
+      return `• ${name}\n  \`${d._id}\`${marker}`;
+    });
+    await ctx.reply(`Gates on your Palgate account:\n\n${lines.join("\n")}`, {
+      parse_mode: "Markdown",
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    await ctx.reply(`Failed to list gates: ${msg}`);
+  }
 }
 
 export async function handleLog(ctx: Context): Promise<void> {

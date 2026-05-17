@@ -3,6 +3,7 @@ import { config } from "./config.ts";
 import { handleOpen } from "./handlers/open.ts";
 import {
   handleAddUser,
+  handleGates,
   handleLog,
   handleRevoke,
   handleUsers,
@@ -37,6 +38,7 @@ bot.command("open", handleOpen);
 bot.command("adduser", handleAddUser);
 bot.command("revoke", handleRevoke);
 bot.command("users", handleUsers);
+bot.command("gates", handleGates);
 bot.command("log", handleLog);
 
 bot.hears(OPEN_BUTTON, handleOpen);
@@ -75,6 +77,7 @@ try {
       { command: "users", description: "List authorized users" },
       { command: "adduser", description: "Add a user: <id> <name>" },
       { command: "revoke", description: "Revoke a user: <id>" },
+      { command: "gates", description: "List gates on your Palgate account" },
       { command: "log", description: "Last 20 open events" },
     ],
     { scope: { type: "chat", chat_id: config.ADMIN_TELEGRAM_ID } },
