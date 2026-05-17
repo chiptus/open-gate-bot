@@ -2,6 +2,7 @@ import { Bot } from "grammy";
 import { config } from "./config.ts";
 import { checkToken, PalgateAuthError } from "./palgate/client.ts";
 import { startTokenWatcher } from "./lib/tokenWatcher.ts";
+import { loadGateInfo } from "./lib/gateInfo.ts";
 import { handleOpen } from "./handlers/open.ts";
 import {
   handleAddUser,
@@ -104,6 +105,7 @@ try {
   }
 }
 
+await loadGateInfo();
 startTokenWatcher(bot.api);
 
 console.log("Bot started. Listening for updates…");

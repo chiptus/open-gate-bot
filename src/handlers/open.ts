@@ -4,6 +4,7 @@ import { config } from "../config.ts";
 import { openGate, PalgateAuthError } from "../palgate/client.ts";
 import { checkCooldown } from "../lib/cooldown.ts";
 import { alertAdmin } from "../lib/adminAlert.ts";
+import { gateLabel } from "../lib/gateInfo.ts";
 
 export async function handleOpen(ctx: Context): Promise<void> {
   const userId = ctx.from?.id;
@@ -26,7 +27,7 @@ export async function handleOpen(ctx: Context): Promise<void> {
     await openGate();
     logEvent(userId, true);
     console.log(`[open] success for ${userId}`);
-    await ctx.reply("🚪 Gate opening…");
+    await ctx.reply(`🚪 ${gateLabel()} opening…`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logEvent(userId, false, msg);
