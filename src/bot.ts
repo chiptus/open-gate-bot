@@ -1,5 +1,6 @@
 import { Bot } from "grammy";
 import { config } from "./config.ts";
+import { checkToken, PalgateAuthError } from "./palgate/client.ts";
 import { handleOpen } from "./handlers/open.ts";
 import {
   handleAddUser,
@@ -86,6 +87,20 @@ try {
   // Admin hasn't DM'd the bot yet — Telegram doesn't know the chat exists.
   // Will succeed on next startup after admin sends /start.
   console.warn("Skipping admin-scoped commands:", err instanceof Error ? err.message : err);
+}
+
+try {
+  await checkToken();
+  console.log("Palgate token OK.");
+} catch (err) {
+  if (err instanceof PalgateAuthError) {
+    console.error(
+      `Palgate token rejected at startup (HTTP ${err.status}). ` +
+        `Re-run the token extractor and update PALGATE_TOKEN.`,
+    );
+  } else {
+    console.warn("Palgate token check failed (non-auth):", err instanceof Error ? err.message : err);
+  }
 }
 
 console.log("Bot started. Listening for updates…");
