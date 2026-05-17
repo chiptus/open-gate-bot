@@ -1,6 +1,7 @@
 import { Bot } from "grammy";
 import { config } from "./config.ts";
 import { checkToken, PalgateAuthError } from "./palgate/client.ts";
+import { startTokenWatcher } from "./lib/tokenWatcher.ts";
 import { handleOpen } from "./handlers/open.ts";
 import {
   handleAddUser,
@@ -102,6 +103,8 @@ try {
     console.warn("Palgate token check failed (non-auth):", err instanceof Error ? err.message : err);
   }
 }
+
+startTokenWatcher(bot.api);
 
 console.log("Bot started. Listening for updates…");
 await bot.start();
