@@ -1,7 +1,7 @@
 import type { Context } from "grammy";
 import { addUser, listActiveUsers, recentEvents, revokeUser } from "../db.ts";
 import { config } from "../config.ts";
-import { listDevices } from "../palgate/client.ts";
+import { deviceDisplayName, deviceId, listDevices } from "../palgate/client.ts";
 
 export function isAdmin(ctx: Context): boolean {
   return ctx.from?.id === config.ADMIN_TELEGRAM_ID;
@@ -61,9 +61,9 @@ export async function handleGates(ctx: Context): Promise<void> {
       return;
     }
     const lines = devices.map((d) => {
-      const name = d.name ?? d.address ?? "(unnamed)";
-      const marker = d._id === config.GATE_DEVICE_ID ? " ← configured" : "";
-      return `• ${name}\n  \`${d._id}\`${marker}`;
+      const id = deviceId(d);
+      const marker = id === config.GATE_DEVICE_ID ? " ← configured" : "";
+      return `• ${deviceDisplayName(d)}\n  \`${id}\`${marker}`;
     });
     await ctx.reply(`Gates on your Palgate account:\n\n${lines.join("\n")}`, {
       parse_mode: "Markdown",

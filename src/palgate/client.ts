@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { config } from "../config.ts";
 import { generateTemporalToken, type TokenTypeValue } from "./token.ts";
 
@@ -17,14 +18,62 @@ export class PalgateError extends Error {
   }
 }
 
-export type PalgateDevice = {
-  _id: string;
-  address?: string;
-  name?: string;
-  [key: string]: unknown;
-};
+// Loose schemas: declare the fields we read, accept everything else via passthrough.
+// Palgate's response shape is undocumented and varies by device/account.
 
-async function call<T = unknown>(path: string): Promise<T> {
+// The list endpoint returns `_id`; the single-device endpoint returns `id`.
+// Display name lives in `customName1` (user override) or `name1` (factory),
+// rarely `name`. We accept all and normalise via the helpers below.
+export const PalgateDeviceSchema = z
+  .object({
+    _id: z.string().optional(),
+    id: z.string().optional(),
+    name: z.string().optional(),
+    name1: z.string().optional(),
+    customName1: z.string().optional(),
+    address: z.string().optional(),
+    model: z.string().optional(),
+    validUntil: z.string().optional(),
+  })
+  .passthrough();
+
+export type PalgateDevice = z.infer<typeof PalgateDeviceSchema>;
+
+export function deviceId(d: PalgateDevice): string {
+  return d._id ?? d.id ?? "";
+}
+
+export function deviceDisplayName(d: PalgateDevice): string {
+  return d.customName1 || d.name1 || d.name || d.address || "Gate";
+}
+
+const DevicesResponseSchema = z
+  .object({
+    devices: z.array(PalgateDeviceSchema).optional(),
+    status: z.string().optional(),
+    msg: z.string().optional(),
+  })
+  .passthrough();
+
+const DeviceResponseSchema = z
+  .object({
+    device: PalgateDeviceSchema.optional(),
+    status: z.string().optional(),
+    msg: z.string().optional(),
+  })
+  .passthrough();
+
+const GenericResponseSchema = z
+  .object({
+    status: z.string().optional(),
+    msg: z.string().optional(),
+    err: z.unknown().optional(),
+  })
+  .passthrough();
+
+export type PalgateGenericResponse = z.infer<typeof GenericResponseSchema>;
+
+async function call(path: string): Promise<unknown> {
   const temporalToken = generateTemporalToken(
     config.PALGATE_TOKEN,
     config.PALGATE_PHONE,
@@ -43,6 +92,7 @@ async function call<T = unknown>(path: string): Promise<T> {
   });
 
   const body = await res.text().catch(() => "");
+  console.log(`[palgate] GET ${path} → ${res.status} ${body}`);
 
   if (!res.ok) {
     if (res.status === 401 || res.status === 403) {
@@ -51,25 +101,29 @@ async function call<T = unknown>(path: string): Promise<T> {
     throw new PalgateError(res.status, body);
   }
 
-  return (body ? JSON.parse(body) : {}) as T;
+  return body ? JSON.parse(body) : {};
 }
 
-export async function openGate(): Promise<void> {
-  await call(`device/${config.GATE_DEVICE_ID}/open-gate?outputNum=1`);
+export async function openGate(): Promise<PalgateGenericResponse> {
+  const raw = await call(`device/${config.GATE_DEVICE_ID}/open-gate?outputNum=1`);
+  return GenericResponseSchema.parse(raw);
 }
 
 export async function listDevices(): Promise<PalgateDevice[]> {
-  const res = await call<{ devices?: PalgateDevice[] } | PalgateDevice[]>("devices/");
-  if (Array.isArray(res)) return res;
-  return res.devices ?? [];
+  const raw = await call("devices/");
+  // Some accounts return {devices: [...]}, others return the array directly.
+  if (Array.isArray(raw)) return z.array(PalgateDeviceSchema).parse(raw);
+  return DevicesResponseSchema.parse(raw).devices ?? [];
 }
 
 export async function getDevice(deviceId: string): Promise<PalgateDevice> {
-  const res = await call<{ device?: PalgateDevice } & PalgateDevice>(`device/${deviceId}/`);
-  return res.device ?? res;
+  const raw = await call(`device/${deviceId}/`);
+  const parsed = DeviceResponseSchema.parse(raw);
+  return parsed.device ?? PalgateDeviceSchema.parse(raw);
 }
 
-export async function checkToken(): Promise<void> {
+export async function checkToken(): Promise<PalgateGenericResponse> {
   const ts = Math.floor(Date.now() / 1000);
-  await call(`user/check-token?ts=${ts}&ts_diff=0`);
+  const raw = await call(`user/check-token?ts=${ts}&ts_diff=0`);
+  return GenericResponseSchema.parse(raw);
 }

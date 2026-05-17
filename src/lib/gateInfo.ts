@@ -1,4 +1,4 @@
-import { getDevice, type PalgateDevice } from "../palgate/client.ts";
+import { deviceDisplayName, getDevice, type PalgateDevice } from "../palgate/client.ts";
 import { config } from "../config.ts";
 
 let cached: PalgateDevice | null = null;
@@ -16,6 +16,5 @@ export async function loadGateInfo(): Promise<void> {
 }
 
 export function gateLabel(): string {
-  if (!cached) return "Gate";
-  return (cached.name as string | undefined) ?? (cached.address as string | undefined) ?? "Gate";
+  return cached ? deviceDisplayName(cached) : "Gate";
 }
