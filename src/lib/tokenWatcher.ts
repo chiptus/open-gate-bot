@@ -1,6 +1,8 @@
 import type { Api } from "grammy";
 import { checkToken, PalgateAuthError } from "../palgate/client.ts";
 import { alertAdmin } from "./adminAlert.ts";
+import { i18n, resolveLocaleFor } from "../i18n.ts";
+import { config } from "../config.ts";
 
 const INTERVAL_MS = 24 * 60 * 60 * 1000;
 
@@ -12,11 +14,11 @@ export function startTokenWatcher(api: Api): void {
     } catch (err) {
       if (err instanceof PalgateAuthError) {
         console.error(`[tokenWatcher] Palgate token rejected (HTTP ${err.status}).`);
+        const adminLocale = resolveLocaleFor(config.ADMIN_TELEGRAM_ID);
         await alertAdmin(
           api,
           "palgate-auth",
-          `Palgate token rejected on daily check (HTTP ${err.status}). ` +
-            `Re-run the token extractor and update PALGATE_TOKEN before users notice.`,
+          i18n.t(adminLocale, "alert-palgate-auth-daily", { status: err.status }),
         );
       } else {
         console.warn(

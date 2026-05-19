@@ -1,12 +1,12 @@
 import { Keyboard } from "grammy";
+import type { BotContext } from "../i18n.ts";
 
-export const OPEN_BUTTON = "🚪 Open Gate";
-export const MANAGE_BUTTON = "👥 Manage Users";
+type TFn = BotContext["t"];
 
-export function userKeyboard() {
-  return new Keyboard().text(OPEN_BUTTON).resized().persistent();
+export function userKeyboard(t: TFn) {
+  return new Keyboard().text(t("button-open")).resized().persistent();
 }
 
-export function adminKeyboard() {
-  return new Keyboard().text(OPEN_BUTTON).text(MANAGE_BUTTON).resized().persistent();
+export function adminKeyboard(t: TFn) {
+  return new Keyboard().text(t("button-open")).text(t("button-manage")).resized().persistent();
 }

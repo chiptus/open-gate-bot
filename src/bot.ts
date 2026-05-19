@@ -1,9 +1,9 @@
 import { Bot } from "grammy";
+import { hears } from "@grammyjs/i18n";
 import { config } from "./config.ts";
 import { type BotContext, i18n } from "./i18n.ts";
 import { checkToken, PalgateAuthError } from "./palgate/client.ts";
 import { startTokenWatcher } from "./lib/tokenWatcher.ts";
-import { loadGateInfo } from "./lib/gateInfo.ts";
 import { handleOpen } from "./handlers/open.ts";
 import {
   handleAddUser,
@@ -18,7 +18,8 @@ import {
   handleRequestAccess,
   handleStart,
 } from "./handlers/access.ts";
-import { OPEN_BUTTON, MANAGE_BUTTON } from "./handlers/keyboard.ts";
+import { handleLang, handleLangCallback } from "./handlers/lang.ts";
+import { loadGateInfo } from "./lib/gateInfo.ts";
 
 const bot = new Bot<BotContext>(config.TELEGRAM_BOT_TOKEN);
 
@@ -41,36 +42,36 @@ bot.use(async (ctx, next) => {
 
 bot.command("start", handleStart);
 bot.command("open", handleOpen);
+bot.command("lang", handleLang);
 bot.command("adduser", handleAddUser);
 bot.command("revoke", handleRevoke);
 bot.command("users", handleUsers);
 bot.command("gates", handleGates);
 bot.command("log", handleLog);
 
-bot.hears(OPEN_BUTTON, handleOpen);
-bot.hears(MANAGE_BUTTON, async (ctx) => {
+// Match the reply-keyboard buttons across all locales via i18n's hears() filter.
+bot.filter(hears("button-open"), handleOpen);
+bot.filter(hears("button-manage"), async (ctx) => {
   if (ctx.from?.id !== config.ADMIN_TELEGRAM_ID) return;
-  await ctx.reply(
-    "Admin commands:\n" +
-      "/users — list authorized users\n" +
-      "/adduser <id> <name> — add user manually\n" +
-      "/revoke <id> — revoke access\n" +
-      "/log — last 20 events",
-  );
+  await ctx.reply(ctx.t("admin-manage-help"));
 });
 
 bot.callbackQuery("request-access", handleRequestAccess);
 bot.callbackQuery(/^approve:(\d+)$/, handleApprove);
 bot.callbackQuery(/^deny:(\d+)$/, handleDeny);
+bot.callbackQuery(/^setlang:(\w+)$/, handleLangCallback);
 
 bot.catch((err) => {
   console.error("Bot error:", err);
 });
 
+await loadGateInfo();
+
 await bot.api.setMyCommands(
   [
     { command: "start", description: "Get started" },
     { command: "open", description: "Open the gate" },
+    { command: "lang", description: "Change your language" },
   ],
   { scope: { type: "default" } },
 );
@@ -80,6 +81,7 @@ try {
     [
       { command: "start", description: "Get started" },
       { command: "open", description: "Open the gate" },
+      { command: "lang", description: "Change your language" },
       { command: "users", description: "List authorized users" },
       { command: "adduser", description: "Add a user: <id> <name>" },
       { command: "revoke", description: "Revoke a user: <id>" },
@@ -89,8 +91,6 @@ try {
     { scope: { type: "chat", chat_id: config.ADMIN_TELEGRAM_ID } },
   );
 } catch (err) {
-  // Admin hasn't DM'd the bot yet — Telegram doesn't know the chat exists.
-  // Will succeed on next startup after admin sends /start.
   console.warn("Skipping admin-scoped commands:", err instanceof Error ? err.message : err);
 }
 
@@ -108,7 +108,6 @@ try {
   }
 }
 
-await loadGateInfo();
 startTokenWatcher(bot.api);
 
 console.log("Bot started. Listening for updates…");
