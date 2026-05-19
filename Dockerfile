@@ -9,6 +9,7 @@ ENV NODE_ENV=production DB_PATH=/data/bot.db
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json tsconfig.json ./
 COPY src ./src
+COPY locales ./locales
 RUN mkdir -p /data
 VOLUME ["/data"]
 CMD ["bun", "run", "src/bot.ts"]

@@ -36,6 +36,11 @@ db.exec(`
     requested_at INTEGER NOT NULL,
     status       TEXT NOT NULL DEFAULT 'pending'
   );
+
+  CREATE TABLE IF NOT EXISTS locale_preferences (
+    telegram_id INTEGER PRIMARY KEY,
+    locale      TEXT NOT NULL
+  );
 `);
 
 export type UserRow = {
@@ -145,4 +150,22 @@ export function upsertAccessRequest(
 
 export function setRequestStatus(telegramId: number, status: "approved" | "denied"): void {
   stmts.setRequestStatus.run(status, telegramId);
+}
+
+const localeStmts = {
+  get: db.query<{ locale: string }, [number]>(
+    "SELECT locale FROM locale_preferences WHERE telegram_id = ?",
+  ),
+  upsert: db.query<null, [number, string]>(
+    `INSERT INTO locale_preferences (telegram_id, locale) VALUES (?, ?)
+     ON CONFLICT(telegram_id) DO UPDATE SET locale = excluded.locale`,
+  ),
+};
+
+export function getLocale(telegramId: number): string | null {
+  return localeStmts.get.get(telegramId)?.locale ?? null;
+}
+
+export function setLocale(telegramId: number, locale: string): void {
+  localeStmts.upsert.run(telegramId, locale);
 }

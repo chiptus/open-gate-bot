@@ -10,6 +10,7 @@ const schema = z.object({
     message: "PALGATE_TOKEN_TYPE must be 0, 1, or 2",
   }),
   DB_PATH: z.string().default("/data/bot.db"),
+  DEFAULT_LOCALE: z.enum(["en", "he"]).default("en"),
 });
 
 export type Config = z.infer<typeof schema>;

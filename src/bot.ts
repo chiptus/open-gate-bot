@@ -1,5 +1,6 @@
 import { Bot } from "grammy";
 import { config } from "./config.ts";
+import { type BotContext, i18n } from "./i18n.ts";
 import { checkToken, PalgateAuthError } from "./palgate/client.ts";
 import { startTokenWatcher } from "./lib/tokenWatcher.ts";
 import { loadGateInfo } from "./lib/gateInfo.ts";
@@ -19,7 +20,9 @@ import {
 } from "./handlers/access.ts";
 import { OPEN_BUTTON, MANAGE_BUTTON } from "./handlers/keyboard.ts";
 
-const bot = new Bot(config.TELEGRAM_BOT_TOKEN);
+const bot = new Bot<BotContext>(config.TELEGRAM_BOT_TOKEN);
+
+bot.use(i18n);
 
 bot.use(async (ctx, next) => {
   const from = ctx.from;
