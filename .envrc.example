@@ -10,4 +10,4 @@ export DB_PATH=./data/bot.db
 
 # en | he. Used when a user has no stored preference and Telegram doesn't
 # report a recognised language_code for them.
-export DEFAULT_LOCALE=en
+export DEFAULT_LOCALE=he
