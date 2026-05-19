@@ -3,6 +3,8 @@ import type { CallbackQueryContext, CommandContext } from "grammy";
 import type { BotContext } from "../i18n.ts";
 import { LOCALES, normaliseLocale, type Locale } from "../i18n.ts";
 import { setLocale } from "../db.ts";
+import { config } from "../config.ts";
+import { setAdminCommands } from "../lib/commandsMenu.ts";
 
 const LABEL: Record<Locale, string> = {
   en: "🇬🇧 English",
@@ -29,6 +31,7 @@ export async function handleLang(ctx: CommandContext<BotContext>): Promise<void>
 
   setLocale(userId, requested);
   await ctx.i18n.renegotiateLocale();
+  if (userId === config.ADMIN_TELEGRAM_ID) await setAdminCommands(ctx.api);
   await ctx.reply(`✅ ${LABEL[requested]}`);
 }
 
@@ -44,6 +47,7 @@ export async function handleLangCallback(ctx: CallbackQueryContext<BotContext>):
 
   setLocale(userId, requested);
   await ctx.i18n.renegotiateLocale();
+  if (userId === config.ADMIN_TELEGRAM_ID) await setAdminCommands(ctx.api);
   await ctx.editMessageText(`✅ ${LABEL[requested]}`);
   await ctx.answerCallbackQuery();
 }

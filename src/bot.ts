@@ -4,6 +4,7 @@ import { config } from "./config.ts";
 import { type BotContext, i18n } from "./i18n.ts";
 import { checkToken, PalgateAuthError } from "./palgate/client.ts";
 import { startTokenWatcher } from "./lib/tokenWatcher.ts";
+import { setAdminCommands, setDefaultCommands } from "./lib/commandsMenu.ts";
 import { handleOpen } from "./handlers/open.ts";
 import {
   handleAddUser,
@@ -67,32 +68,8 @@ bot.catch((err) => {
 
 await loadGateInfo();
 
-await bot.api.setMyCommands(
-  [
-    { command: "start", description: "Get started" },
-    { command: "open", description: "Open the gate" },
-    { command: "lang", description: "Change your language" },
-  ],
-  { scope: { type: "default" } },
-);
-
-try {
-  await bot.api.setMyCommands(
-    [
-      { command: "start", description: "Get started" },
-      { command: "open", description: "Open the gate" },
-      { command: "lang", description: "Change your language" },
-      { command: "users", description: "List authorized users" },
-      { command: "adduser", description: "Add a user: <id> <name>" },
-      { command: "revoke", description: "Revoke a user: <id>" },
-      { command: "gates", description: "List gates on your Palgate account" },
-      { command: "log", description: "Last 20 open events" },
-    ],
-    { scope: { type: "chat", chat_id: config.ADMIN_TELEGRAM_ID } },
-  );
-} catch (err) {
-  console.warn("Skipping admin-scoped commands:", err instanceof Error ? err.message : err);
-}
+await setDefaultCommands(bot.api);
+await setAdminCommands(bot.api);
 
 try {
   await checkToken();
