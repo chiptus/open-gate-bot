@@ -63,7 +63,14 @@ export async function handleGates(ctx: Context): Promise<void> {
     const lines = devices.map((d) => {
       const id = deviceId(d);
       const marker = id === config.GATE_DEVICE_ID ? " ← configured" : "";
-      return `• ${deviceDisplayName(d)}\n  \`${id}\`${marker}`;
+      const status: string[] = [];
+      if (d.output1Disabled !== undefined) {
+        status.push(d.output1Disabled ? "🔓 latched open" : "🔒 closed (openable)");
+      }
+      if (d.simStatus && d.simStatus !== "activated") status.push(`SIM: ${d.simStatus}`);
+      if (d.validUntil) status.push(`valid until ${d.validUntil.slice(0, 10)}`);
+      const statusLine = status.length ? `\n  ${status.join(" · ")}` : "";
+      return `• ${deviceDisplayName(d)}${marker}\n  \`${id}\`${statusLine}`;
     });
     await ctx.reply(`Gates on your Palgate account:\n\n${lines.join("\n")}`, {
       parse_mode: "Markdown",

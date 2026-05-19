@@ -18,6 +18,14 @@ export class PalgateError extends Error {
   }
 }
 
+// HTTP 200, but Palgate refused the action (e.g. output disabled, gate latched).
+export class PalgateRejectedError extends Error {
+  constructor(message: string, public readonly response: PalgateGenericResponse) {
+    super(message);
+    this.name = "PalgateRejectedError";
+  }
+}
+
 // Loose schemas: declare the fields we read, accept everything else via passthrough.
 // Palgate's response shape is undocumented and varies by device/account.
 
@@ -34,6 +42,8 @@ export const PalgateDeviceSchema = z
     address: z.string().optional(),
     model: z.string().optional(),
     validUntil: z.string().optional(),
+    output1Disabled: z.boolean().optional(),
+    simStatus: z.string().optional(),
   })
   .passthrough();
 
@@ -68,6 +78,7 @@ const GenericResponseSchema = z
     status: z.string().optional(),
     msg: z.string().optional(),
     err: z.unknown().optional(),
+    confirmed: z.boolean().optional(),
   })
   .passthrough();
 
@@ -106,7 +117,13 @@ async function call(path: string): Promise<unknown> {
 
 export async function openGate(): Promise<PalgateGenericResponse> {
   const raw = await call(`device/${config.GATE_DEVICE_ID}/open-gate?outputNum=1`);
-  return GenericResponseSchema.parse(raw);
+  const res = GenericResponseSchema.parse(raw);
+  // Palgate returns HTTP 200 even when it refuses the action; the real outcome
+  // is in `confirmed` and `err`.
+  if (res.confirmed === false || (res.err !== null && res.err !== undefined)) {
+    throw new PalgateRejectedError(res.msg || String(res.err) || "Gate refused command", res);
+  }
+  return res;
 }
 
 export async function listDevices(): Promise<PalgateDevice[]> {

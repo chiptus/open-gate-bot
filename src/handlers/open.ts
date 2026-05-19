@@ -1,7 +1,7 @@
 import type { Context } from "grammy";
 import { isAuthorized, logEvent } from "../db.ts";
 import { config } from "../config.ts";
-import { openGate, PalgateAuthError } from "../palgate/client.ts";
+import { openGate, PalgateAuthError, PalgateRejectedError } from "../palgate/client.ts";
 import { checkCooldown } from "../lib/cooldown.ts";
 import { alertAdmin } from "../lib/adminAlert.ts";
 import { gateLabel } from "../lib/gateInfo.ts";
@@ -31,6 +31,11 @@ export async function handleOpen(ctx: Context): Promise<void> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logEvent(userId, false, msg);
+
+    if (err instanceof PalgateRejectedError) {
+      await ctx.reply(`Gate didn't open: ${err.message}`);
+      return;
+    }
 
     if (err instanceof PalgateAuthError) {
       await alertAdmin(
