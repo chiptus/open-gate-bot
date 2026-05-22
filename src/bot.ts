@@ -10,6 +10,7 @@ import {
   handleAddUser,
   handleGates,
   handleLog,
+  handleManage,
   handleRevoke,
   handleUsers,
 } from "./handlers/admin.ts";
@@ -21,6 +22,7 @@ import {
 } from "./handlers/access.ts";
 import { handleLang, handleLangCallback } from "./handlers/lang.ts";
 import { loadGateInfo } from "./lib/gateInfo.ts";
+import { requireAdmin, requireGateAccess } from "./middleware/access.ts";
 
 const bot = new Bot<BotContext>(config.TELEGRAM_BOT_TOKEN);
 
@@ -28,8 +30,11 @@ bot.use(i18n);
 
 bot.use(async (ctx, next) => {
   const from = ctx.from;
-  const who = from ? `${from.id}${from.username ? ` @${from.username}` : ""}` : "?";
-  const what = ctx.message?.text ?? ctx.callbackQuery?.data ?? ctx.update.update_id;
+  const who = from
+    ? `${from.id}${from.username ? ` @${from.username}` : ""}`
+    : "?";
+  const what =
+    ctx.message?.text ?? ctx.callbackQuery?.data ?? ctx.update.update_id;
   const start = Date.now();
   console.log(`→ ${who}: ${what}`);
   try {
@@ -42,24 +47,21 @@ bot.use(async (ctx, next) => {
 });
 
 bot.command("start", handleStart);
-bot.command("open", handleOpen);
+bot.command("open", requireGateAccess, handleOpen);
 bot.command("lang", handleLang);
-bot.command("adduser", handleAddUser);
-bot.command("revoke", handleRevoke);
-bot.command("users", handleUsers);
-bot.command("gates", handleGates);
-bot.command("log", handleLog);
+bot.command("adduser", requireAdmin, handleAddUser);
+bot.command("revoke", requireAdmin, handleRevoke);
+bot.command("users", requireAdmin, handleUsers);
+bot.command("gates", requireAdmin, handleGates);
+bot.command("log", requireAdmin, handleLog);
 
 // Match the reply-keyboard buttons across all locales via i18n's hears() filter.
-bot.filter(hears("button-open"), handleOpen);
-bot.filter(hears("button-manage"), async (ctx) => {
-  if (ctx.from?.id !== config.ADMIN_TELEGRAM_ID) return;
-  await ctx.reply(ctx.t("admin-manage-help"));
-});
+bot.filter(hears("button-open"), requireGateAccess, handleOpen);
+bot.filter(hears("button-manage"), requireAdmin, handleManage);
 
 bot.callbackQuery("request-access", handleRequestAccess);
-bot.callbackQuery(/^approve:(\d+)$/, handleApprove);
-bot.callbackQuery(/^deny:(\d+)$/, handleDeny);
+bot.callbackQuery(/^approve:(\d+)$/, requireAdmin, handleApprove);
+bot.callbackQuery(/^deny:(\d+)$/, requireAdmin, handleDeny);
 bot.callbackQuery(/^setlang:(\w+)$/, handleLangCallback);
 
 bot.catch((err) => {
@@ -81,7 +83,10 @@ try {
         `Re-run the token extractor and update PALGATE_TOKEN.`,
     );
   } else {
-    console.warn("Palgate token check failed (non-auth):", err instanceof Error ? err.message : err);
+    console.warn(
+      "Palgate token check failed (non-auth):",
+      err instanceof Error ? err.message : err,
+    );
   }
 }
 

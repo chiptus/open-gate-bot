@@ -69,8 +69,12 @@ export type AccessRequestRow = {
 };
 
 const stmts = {
-  getUser: db.query<UserRow, [number]>("SELECT * FROM users WHERE telegram_id = ?"),
-  listActiveUsers: db.query<UserRow, []>("SELECT * FROM users WHERE is_active = 1 ORDER BY added_at DESC"),
+  getUser: db.query<UserRow, [number]>(
+    "SELECT * FROM users WHERE telegram_id = ?",
+  ),
+  listActiveUsers: db.query<UserRow, []>(
+    "SELECT * FROM users WHERE is_active = 1 ORDER BY added_at DESC",
+  ),
   upsertUser: db.query<
     null,
     [number, string, string | null, number, number]
@@ -80,14 +84,20 @@ const stmts = {
        name = excluded.name,
        username = excluded.username,
        is_active = 1`),
-  revokeUser: db.query<null, [number]>("UPDATE users SET is_active = 0 WHERE telegram_id = ?"),
+  revokeUser: db.query<null, [number]>(
+    "UPDATE users SET is_active = 0 WHERE telegram_id = ?",
+  ),
 
   logEvent: db.query<null, [number, number, number, string | null]>(
     "INSERT INTO events (telegram_id, ts, success, error) VALUES (?, ?, ?, ?)",
   ),
-  recentEvents: db.query<EventRow, [number]>("SELECT * FROM events ORDER BY ts DESC LIMIT ?"),
+  recentEvents: db.query<EventRow, [number]>(
+    "SELECT * FROM events ORDER BY ts DESC LIMIT ?",
+  ),
 
-  getRequest: db.query<AccessRequestRow, [number]>("SELECT * FROM access_requests WHERE telegram_id = ?"),
+  getRequest: db.query<AccessRequestRow, [number]>(
+    "SELECT * FROM access_requests WHERE telegram_id = ?",
+  ),
   upsertRequest: db.query<null, [number, string, string | null, number]>(
     `INSERT INTO access_requests (telegram_id, name, username, requested_at, status)
      VALUES (?, ?, ?, ?, 'pending')
@@ -106,11 +116,6 @@ export function getUser(telegramId: number): UserRow | null {
   return stmts.getUser.get(telegramId);
 }
 
-export function isAuthorized(telegramId: number): boolean {
-  const u = stmts.getUser.get(telegramId);
-  return !!u && u.is_active === 1;
-}
-
 export function listActiveUsers(): UserRow[] {
   return stmts.listActiveUsers.all();
 }
@@ -121,15 +126,30 @@ export function addUser(
   username: string | null,
   addedBy: number,
 ): void {
-  stmts.upsertUser.run(telegramId, name, username, Math.floor(Date.now() / 1000), addedBy);
+  stmts.upsertUser.run(
+    telegramId,
+    name,
+    username,
+    Math.floor(Date.now() / 1000),
+    addedBy,
+  );
 }
 
 export function revokeUser(telegramId: number): void {
   stmts.revokeUser.run(telegramId);
 }
 
-export function logEvent(telegramId: number, success: boolean, error: string | null = null): void {
-  stmts.logEvent.run(telegramId, Math.floor(Date.now() / 1000), success ? 1 : 0, error);
+export function logEvent(
+  telegramId: number,
+  success: boolean,
+  error: string | null = null,
+): void {
+  stmts.logEvent.run(
+    telegramId,
+    Math.floor(Date.now() / 1000),
+    success ? 1 : 0,
+    error,
+  );
 }
 
 export function recentEvents(limit = 20): EventRow[] {
@@ -145,10 +165,18 @@ export function upsertAccessRequest(
   name: string,
   username: string | null,
 ): void {
-  stmts.upsertRequest.run(telegramId, name, username, Math.floor(Date.now() / 1000));
+  stmts.upsertRequest.run(
+    telegramId,
+    name,
+    username,
+    Math.floor(Date.now() / 1000),
+  );
 }
 
-export function setRequestStatus(telegramId: number, status: "approved" | "denied"): void {
+export function setRequestStatus(
+  telegramId: number,
+  status: "approved" | "denied",
+): void {
   stmts.setRequestStatus.run(status, telegramId);
 }
 

@@ -10,6 +10,9 @@ A glossary, not a spec. Terms only; implementation details belong in code/ADRs.
 
 **Access request** — a non-authorized user's request to be added. Lives in `access_requests` until approved or denied. Approve/Deny are inline buttons on the admin DM. Approved requests become rows in `users`.
 
+**Gate access** — the right to open a gate, regardless of how it was granted. Held by the super admin (implicitly) and by authorized users (explicitly). Scoped per gate; today all authorized users have access to the single configured gate.
+_Avoid_: authorized, permission
+
 ## Locale
 
 **Locale** — one of a small hardcoded set: `"en" | "he"`. Source of truth: `const LOCALES = ["en", "he"] as const`. Adding a language = one line plus a new `.ftl` file.
@@ -17,6 +20,7 @@ A glossary, not a spec. Terms only; implementation details belong in code/ADRs.
 **Locale preference** — a UI display setting, separate from authorization. Stored in `locale_preferences(telegram_id, locale)`. Anyone may set their own preference via `/lang`, including unauthorized users mid-onboarding. Does **not** imply authorization.
 
 **Locale negotiation** — resolution order when picking which locale to render for a caller:
+
 1. Stored preference in `locale_preferences` (if any)
 2. `ctx.from.language_code` from Telegram (normalised: `iw` → `he`, region suffix stripped)
 3. `DEFAULT_LOCALE` env var

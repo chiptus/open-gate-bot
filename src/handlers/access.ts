@@ -3,32 +3,41 @@ import { InlineKeyboard } from "grammy";
 import {
   addUser,
   getAccessRequest,
-  isAuthorized,
   setRequestStatus,
   upsertAccessRequest,
 } from "../db.ts";
 import { config } from "../config.ts";
 import { adminKeyboard, userKeyboard } from "./keyboard.ts";
 import { i18n, resolveLocaleFor, type BotContext } from "../i18n.ts";
+import { isAdmin, hasGateAccess } from "../lib/access.ts";
 
 function displayName(ctx: BotContext): string {
   const f = ctx.from;
   if (!f) return "unknown";
-  return [f.first_name, f.last_name].filter(Boolean).join(" ") || f.username || String(f.id);
+  return (
+    [f.first_name, f.last_name].filter(Boolean).join(" ") ||
+    f.username ||
+    String(f.id)
+  );
 }
 
-export async function handleStart(ctx: CommandContext<BotContext>): Promise<void> {
+export async function handleStart(
+  ctx: CommandContext<BotContext>,
+): Promise<void> {
   const userId = ctx.from?.id;
   if (!userId) return;
 
-  const isAdmin = userId === config.ADMIN_TELEGRAM_ID;
-  if (isAdmin) {
-    await ctx.reply(ctx.t("start-welcome-admin"), { reply_markup: adminKeyboard(ctx.t) });
+  if (isAdmin(userId)) {
+    await ctx.reply(ctx.t("start-welcome-admin"), {
+      reply_markup: adminKeyboard(ctx.t),
+    });
     return;
   }
 
-  if (isAuthorized(userId)) {
-    await ctx.reply(ctx.t("start-welcome-user"), { reply_markup: userKeyboard(ctx.t) });
+  if (hasGateAccess(userId)) {
+    await ctx.reply(ctx.t("start-welcome-user"), {
+      reply_markup: userKeyboard(ctx.t),
+    });
     return;
   }
 
@@ -39,15 +48,20 @@ export async function handleStart(ctx: CommandContext<BotContext>): Promise<void
   }
 
   await ctx.reply(ctx.t("start-not-authorized"), {
-    reply_markup: new InlineKeyboard().text(ctx.t("button-request-access"), "request-access"),
+    reply_markup: new InlineKeyboard().text(
+      ctx.t("button-request-access"),
+      "request-access",
+    ),
   });
 }
 
-export async function handleRequestAccess(ctx: CallbackQueryContext<BotContext>): Promise<void> {
+export async function handleRequestAccess(
+  ctx: CallbackQueryContext<BotContext>,
+): Promise<void> {
   const userId = ctx.from?.id;
   if (!userId) return;
 
-  if (userId === config.ADMIN_TELEGRAM_ID || isAuthorized(userId)) {
+  if (hasGateAccess(userId)) {
     await ctx.answerCallbackQuery(ctx.t("access-already-authorized"));
     return;
   }
@@ -60,7 +74,9 @@ export async function handleRequestAccess(ctx: CallbackQueryContext<BotContext>)
   await ctx.answerCallbackQuery();
 
   const adminLocale = resolveLocaleFor(config.ADMIN_TELEGRAM_ID);
-  const usernameLine = username ? i18n.t(adminLocale, "access-username-line", { username }) + "\n" : "";
+  const usernameLine = username
+    ? i18n.t(adminLocale, "access-username-line", { username }) + "\n"
+    : "";
   const adminMsg = i18n.t(adminLocale, "access-admin-dm", {
     name,
     id: userId,
@@ -75,11 +91,9 @@ export async function handleRequestAccess(ctx: CallbackQueryContext<BotContext>)
   });
 }
 
-export async function handleApprove(ctx: CallbackQueryContext<BotContext>): Promise<void> {
-  if (ctx.from?.id !== config.ADMIN_TELEGRAM_ID) {
-    await ctx.answerCallbackQuery(ctx.t("access-admin-only"));
-    return;
-  }
+export async function handleApprove(
+  ctx: CallbackQueryContext<BotContext>,
+): Promise<void> {
   const idStr = ctx.match?.[1];
   const id = Number(idStr);
   if (!Number.isInteger(id) || id <= 0) {
@@ -94,7 +108,9 @@ export async function handleApprove(ctx: CallbackQueryContext<BotContext>): Prom
   addUser(id, req.name, req.username, config.ADMIN_TELEGRAM_ID);
   setRequestStatus(id, "approved");
 
-  await ctx.editMessageText(ctx.t("access-approved-ack", { name: req.name, id }));
+  await ctx.editMessageText(
+    ctx.t("access-approved-ack", { name: req.name, id }),
+  );
   await ctx.answerCallbackQuery();
 
   const userLocale = resolveLocaleFor(id);
@@ -107,11 +123,9 @@ export async function handleApprove(ctx: CallbackQueryContext<BotContext>): Prom
   }
 }
 
-export async function handleDeny(ctx: CallbackQueryContext<BotContext>): Promise<void> {
-  if (ctx.from?.id !== config.ADMIN_TELEGRAM_ID) {
-    await ctx.answerCallbackQuery(ctx.t("access-admin-only"));
-    return;
-  }
+export async function handleDeny(
+  ctx: CallbackQueryContext<BotContext>,
+): Promise<void> {
   const idStr = ctx.match?.[1];
   const id = Number(idStr);
   if (!Number.isInteger(id) || id <= 0) {

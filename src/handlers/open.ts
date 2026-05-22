@@ -1,6 +1,10 @@
-import { isAuthorized, logEvent } from "../db.ts";
+import { logEvent } from "../db.ts";
 import { config } from "../config.ts";
-import { openGate, PalgateAuthError, PalgateRejectedError } from "../palgate/client.ts";
+import {
+  openGate,
+  PalgateAuthError,
+  PalgateRejectedError,
+} from "../palgate/client.ts";
 import { checkCooldown } from "../lib/cooldown.ts";
 import { alertAdmin } from "../lib/adminAlert.ts";
 import { gateLabel } from "../lib/gateInfo.ts";
@@ -10,15 +14,11 @@ export async function handleOpen(ctx: BotContext): Promise<void> {
   const userId = ctx.from?.id;
   if (!userId) return;
 
-  const isAdmin = userId === config.ADMIN_TELEGRAM_ID;
-  if (!isAdmin && !isAuthorized(userId)) {
-    await ctx.reply(ctx.t("open-not-authorized"));
-    return;
-  }
-
   const cd = checkCooldown(userId);
   if (!cd.ok) {
-    await ctx.reply(ctx.t("open-cooldown", { seconds: Math.ceil(cd.waitMs / 1000) }));
+    await ctx.reply(
+      ctx.t("open-cooldown", { seconds: Math.ceil(cd.waitMs / 1000) }),
+    );
     return;
   }
 
@@ -42,7 +42,9 @@ export async function handleOpen(ctx: BotContext): Promise<void> {
       await alertAdmin(
         ctx.api,
         "palgate-auth",
-        i18n.t(adminLocale, "alert-palgate-auth-on-open", { status: err.status }),
+        i18n.t(adminLocale, "alert-palgate-auth-on-open", {
+          status: err.status,
+        }),
       );
       await ctx.reply(ctx.t("open-auth-failed"));
       return;
