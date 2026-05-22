@@ -1,0 +1,15 @@
+app = "open-gate-bot"
+primary_region = "lhr"  # e.g. "ams", "fra"
+
+[build]
+
+[mounts]
+  source = "bot_data"
+  destination = "/data"
+
+[http_service]
+  # intentionally absent — long-polling bot, no inbound HTTP
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
