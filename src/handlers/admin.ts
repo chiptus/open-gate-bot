@@ -32,7 +32,12 @@ export async function handleAddUser(ctx: BotContext): Promise<void> {
       nameOverride ||
       [chat.first_name, chat.last_name].filter(Boolean).join(" ") ||
       username;
-    addUser(id, resolvedName, chat.username ?? username, config.ADMIN_TELEGRAM_ID);
+    addUser(
+      id,
+      resolvedName,
+      chat.username ?? username,
+      config.ADMIN_TELEGRAM_ID,
+    );
     await ctx.reply(ctx.t("adduser-ok", { name: resolvedName, id }));
     return;
   }

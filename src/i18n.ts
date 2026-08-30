@@ -16,7 +16,9 @@ export function normaliseLocale(raw: string | undefined | null): Locale | null {
   if (!raw) return null;
   const two = raw.slice(0, 2).toLowerCase();
   const canonical = ALIASES[two] ?? two;
-  return (LOCALES as readonly string[]).includes(canonical) ? (canonical as Locale) : null;
+  return (LOCALES as readonly string[]).includes(canonical)
+    ? (canonical as Locale)
+    : null;
 }
 
 /**

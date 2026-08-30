@@ -17,7 +17,9 @@ function picker() {
   return kb;
 }
 
-export async function handleLang(ctx: CommandContext<BotContext>): Promise<void> {
+export async function handleLang(
+  ctx: CommandContext<BotContext>,
+): Promise<void> {
   const userId = ctx.from?.id;
   if (!userId) return;
 
@@ -25,7 +27,9 @@ export async function handleLang(ctx: CommandContext<BotContext>): Promise<void>
   const requested = normaliseLocale(arg || undefined);
 
   if (!requested) {
-    await ctx.reply("Choose your language / בחר שפה:", { reply_markup: picker() });
+    await ctx.reply("Choose your language / בחר שפה:", {
+      reply_markup: picker(),
+    });
     return;
   }
 
@@ -35,7 +39,9 @@ export async function handleLang(ctx: CommandContext<BotContext>): Promise<void>
   await ctx.reply(`✅ ${LABEL[requested]}`);
 }
 
-export async function handleLangCallback(ctx: CallbackQueryContext<BotContext>): Promise<void> {
+export async function handleLangCallback(
+  ctx: CallbackQueryContext<BotContext>,
+): Promise<void> {
   const userId = ctx.from?.id;
   if (!userId) return;
 

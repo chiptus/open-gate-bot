@@ -17,7 +17,10 @@ const ADMIN_COMMANDS = [
   { command: "log", key: "cmd-log" },
 ] as const;
 
-function buildCommands(specs: readonly { command: string; key: string }[], locale: Locale) {
+function buildCommands(
+  specs: readonly { command: string; key: string }[],
+  locale: Locale,
+) {
   return specs.map(({ command, key }) => ({
     command,
     description: i18n.t(locale, key),
@@ -27,9 +30,12 @@ function buildCommands(specs: readonly { command: string; key: string }[], local
 /** Default-scope menus per language_code. Set once at boot. */
 export async function setDefaultCommands(api: Api): Promise<void> {
   // Fallback for any language we don't have a catalogue for.
-  await api.setMyCommands(buildCommands(DEFAULT_COMMANDS, config.DEFAULT_LOCALE), {
-    scope: { type: "default" },
-  });
+  await api.setMyCommands(
+    buildCommands(DEFAULT_COMMANDS, config.DEFAULT_LOCALE),
+    {
+      scope: { type: "default" },
+    },
+  );
   for (const locale of LOCALES) {
     await api.setMyCommands(buildCommands(DEFAULT_COMMANDS, locale), {
       scope: { type: "default" },
@@ -50,6 +56,9 @@ export async function setAdminCommands(api: Api): Promise<void> {
       scope: { type: "chat", chat_id: config.ADMIN_TELEGRAM_ID },
     });
   } catch (err) {
-    console.warn("Skipping admin-scoped commands:", err instanceof Error ? err.message : err);
+    console.warn(
+      "Skipping admin-scoped commands:",
+      err instanceof Error ? err.message : err,
+    );
   }
 }

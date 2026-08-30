@@ -8,5 +8,9 @@ export function userKeyboard(t: TFn) {
 }
 
 export function adminKeyboard(t: TFn) {
-  return new Keyboard().text(t("button-open")).text(t("button-manage")).resized().persistent();
+  return new Keyboard()
+    .text(t("button-open"))
+    .text(t("button-manage"))
+    .resized()
+    .persistent();
 }

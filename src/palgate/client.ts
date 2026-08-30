@@ -5,14 +5,20 @@ import { generateTemporalToken, type TokenTypeValue } from "./token.ts";
 const BASE_URL = "https://api1.pal-es.com/v1/bt";
 
 export class PalgateAuthError extends Error {
-  constructor(public readonly status: number, body: string) {
+  constructor(
+    public readonly status: number,
+    body: string,
+  ) {
     super(`Palgate auth failed (${status}): ${body}`);
     this.name = "PalgateAuthError";
   }
 }
 
 export class PalgateError extends Error {
-  constructor(public readonly status: number, body: string) {
+  constructor(
+    public readonly status: number,
+    body: string,
+  ) {
     super(`Palgate request failed (${status}): ${body}`);
     this.name = "PalgateError";
   }
@@ -20,7 +26,10 @@ export class PalgateError extends Error {
 
 // HTTP 200, but Palgate refused the action (e.g. output disabled, gate latched).
 export class PalgateRejectedError extends Error {
-  constructor(message: string, public readonly response: PalgateGenericResponse) {
+  constructor(
+    message: string,
+    public readonly response: PalgateGenericResponse,
+  ) {
     super(message);
     this.name = "PalgateRejectedError";
   }
@@ -116,12 +125,17 @@ async function call(path: string): Promise<unknown> {
 }
 
 export async function openGate(): Promise<PalgateGenericResponse> {
-  const raw = await call(`device/${config.GATE_DEVICE_ID}/open-gate?outputNum=1`);
+  const raw = await call(
+    `device/${config.GATE_DEVICE_ID}/open-gate?outputNum=1`,
+  );
   const res = GenericResponseSchema.parse(raw);
   // Palgate returns HTTP 200 even when it refuses the action; the real outcome
   // is in `confirmed` and `err`.
   if (res.confirmed === false || (res.err !== null && res.err !== undefined)) {
-    throw new PalgateRejectedError(res.msg || String(res.err) || "Gate refused command", res);
+    throw new PalgateRejectedError(
+      res.msg || String(res.err) || "Gate refused command",
+      res,
+    );
   }
   return res;
 }

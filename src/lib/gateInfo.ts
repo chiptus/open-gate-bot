@@ -1,4 +1,8 @@
-import { deviceDisplayName, getDevice, type PalgateDevice } from "../palgate/client.ts";
+import {
+  deviceDisplayName,
+  getDevice,
+  type PalgateDevice,
+} from "../palgate/client.ts";
 import { config } from "../config.ts";
 
 let cached: PalgateDevice | null = null;

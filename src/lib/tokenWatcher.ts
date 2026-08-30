@@ -13,12 +13,16 @@ export function startTokenWatcher(api: Api): void {
       console.log("[tokenWatcher] Palgate token OK.");
     } catch (err) {
       if (err instanceof PalgateAuthError) {
-        console.error(`[tokenWatcher] Palgate token rejected (HTTP ${err.status}).`);
+        console.error(
+          `[tokenWatcher] Palgate token rejected (HTTP ${err.status}).`,
+        );
         const adminLocale = resolveLocaleFor(config.ADMIN_TELEGRAM_ID);
         await alertAdmin(
           api,
           "palgate-auth",
-          i18n.t(adminLocale, "alert-palgate-auth-daily", { status: err.status }),
+          i18n.t(adminLocale, "alert-palgate-auth-daily", {
+            status: err.status,
+          }),
         );
       } else {
         console.warn(

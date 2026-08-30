@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "src/**"
+      - "locales/**"
+      - "Dockerfile"
 jobs:
   deploy:
     name: Deploy app
