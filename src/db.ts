@@ -75,6 +75,9 @@ const stmts = {
   listActiveUsers: db.query<UserRow, []>(
     "SELECT * FROM users WHERE is_active = 1 ORDER BY added_at DESC",
   ),
+  getUserByUsername: db.query<UserRow, [string]>(
+    "SELECT * FROM users WHERE username = ? COLLATE NOCASE AND is_active = 1",
+  ),
   upsertUser: db.query<
     null,
     [number, string, string | null, number, number]
@@ -118,6 +121,10 @@ export function getUser(telegramId: number): UserRow | null {
 
 export function listActiveUsers(): UserRow[] {
   return stmts.listActiveUsers.all();
+}
+
+export function getUserByUsername(username: string): UserRow | null {
+  return stmts.getUserByUsername.get(username);
 }
 
 export function addUser(

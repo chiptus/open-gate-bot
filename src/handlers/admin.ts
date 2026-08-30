@@ -1,4 +1,10 @@
-import { addUser, listActiveUsers, recentEvents, revokeUser } from "../db.ts";
+import {
+  addUser,
+  getUserByUsername,
+  listActiveUsers,
+  recentEvents,
+  revokeUser,
+} from "../db.ts";
 import { config } from "../config.ts";
 import { deviceDisplayName, deviceId, listDevices } from "../palgate/client.ts";
 import type { BotContext } from "../i18n.ts";
@@ -57,8 +63,21 @@ export async function handleAddUser(ctx: BotContext): Promise<void> {
 }
 
 export async function handleRevoke(ctx: BotContext): Promise<void> {
-  const idStr = ctx.match?.toString().trim();
-  const id = Number(idStr);
+  const arg = ctx.match?.toString().trim();
+
+  if (arg?.startsWith("@")) {
+    const username = arg.slice(1);
+    const user = getUserByUsername(username);
+    if (!user) {
+      await ctx.reply(ctx.t("revoke-username-not-found", { username }));
+      return;
+    }
+    revokeUser(user.telegram_id);
+    await ctx.reply(ctx.t("revoke-ok", { id: String(user.telegram_id) }));
+    return;
+  }
+
+  const id = Number(arg);
   if (!Number.isInteger(id) || id <= 0) {
     await ctx.reply(ctx.t("revoke-usage"));
     return;

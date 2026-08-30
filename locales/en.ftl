@@ -46,7 +46,7 @@ admin-manage-help =
   Admin commands:
   /users — list authorized users
   /adduser <id> <name> or /adduser @username — add user manually
-  /revoke <id> — revoke access
+  /revoke <id> or /revoke @username — revoke access
   /gates — list gates on your Palgate account
   /log — last 20 events
 
@@ -56,8 +56,9 @@ adduser-ok = ✅ Added {$name} ({$id})
 adduser-username-not-found = Couldn't find @{$username}. They need to have messaged the bot at least once (or use their numeric ID instead).
 
 # /revoke
-revoke-usage = Usage: /revoke <telegram_id>
+revoke-usage = Usage: /revoke <telegram_id> or /revoke @username
 revoke-ok = 🚫 Revoked {$id}
+revoke-username-not-found = Couldn't find an authorized user @{$username}.
 
 # /users
 users-empty = No authorized users (other than you).
@@ -88,7 +89,7 @@ cmd-lang = Change your language
 cmd-version = Show the deployed version
 cmd-users = List authorized users
 cmd-adduser = Add a user: <id> <name> or @username
-cmd-revoke = Revoke a user: <id>
+cmd-revoke = Revoke a user: <id> or @username
 cmd-gates = List gates on your Palgate account
 cmd-log = Last 20 open events
 

@@ -44,7 +44,7 @@ admin-manage-help =
   פקודות ניהול:
   /users — רשימת משתמשים מורשים
   /adduser <מזהה> <שם> או /adduser @username — הוספת משתמש ידנית
-  /revoke <מזהה> — שלילת הרשאה
+  /revoke <מזהה> או /revoke @username — שלילת הרשאה
   /gates — רשימת השערים בחשבון Palgate
   /log — 20 האירועים האחרונים
 
@@ -54,8 +54,9 @@ adduser-ok = ✅ נוסף: {$name} ({$id})
 adduser-username-not-found = לא נמצא @{$username}. על המשתמש לשלוח לבוט הודעה לפחות פעם אחת (או להשתמש במזהה המספרי).
 
 # /revoke
-revoke-usage = שימוש: /revoke <מזהה_טלגרם>
+revoke-usage = שימוש: /revoke <מזהה_טלגרם> או /revoke @username
 revoke-ok = 🚫 הרשאה נשללה: {$id}
+revoke-username-not-found = לא נמצא משתמש מורשה בשם @{$username}.
 
 # /users
 users-empty = אין משתמשים מורשים נוספים.
@@ -86,7 +87,7 @@ cmd-lang = שינוי שפה
 cmd-version = הצגת הגרסה המותקנת
 cmd-users = רשימת משתמשים מורשים
 cmd-adduser = הוספת משתמש: <מזהה> <שם> או @username
-cmd-revoke = שלילת הרשאה: <מזהה>
+cmd-revoke = שלילת הרשאה: <מזהה> או @username
 cmd-gates = רשימת השערים בחשבון Palgate
 cmd-log = 20 האירועים האחרונים
 
