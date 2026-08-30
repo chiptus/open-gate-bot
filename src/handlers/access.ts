@@ -1,25 +1,10 @@
 import type { CallbackQueryContext, CommandContext } from "grammy";
-import { InlineKeyboard } from "grammy";
-import {
-  addUser,
-  getAccessRequest,
-  setRequestStatus,
-  upsertAccessRequest,
-} from "../db.ts";
+import { addUser, getAccessRequest, setRequestStatus } from "../db.ts";
 import { config } from "../config.ts";
 import { adminKeyboard, userKeyboard } from "./keyboard.ts";
 import { i18n, resolveLocaleFor, type BotContext } from "../i18n.ts";
 import { isAdmin, hasGateAccess } from "../lib/access.ts";
-
-function displayName(ctx: BotContext): string {
-  const f = ctx.from;
-  if (!f) return "unknown";
-  return (
-    [f.first_name, f.last_name].filter(Boolean).join(" ") ||
-    f.username ||
-    String(f.id)
-  );
-}
+import { ensureAccessRequested } from "../lib/accessRequests.ts";
 
 export async function handleStart(
   ctx: CommandContext<BotContext>,
@@ -41,18 +26,31 @@ export async function handleStart(
     return;
   }
 
-  const existing = getAccessRequest(userId);
-  if (existing?.status === "pending") {
-    await ctx.reply(ctx.t("start-request-pending"));
-    return;
-  }
-
-  await ctx.reply(ctx.t("start-not-authorized"), {
-    reply_markup: new InlineKeyboard().text(
-      ctx.t("button-request-access"),
-      "request-access",
+  const result = await ensureAccessRequested(ctx.api, ctx.from);
+  await ctx.reply(
+    ctx.t(
+      result === "pending" ? "start-request-pending" : "start-not-authorized",
     ),
-  });
+  );
+}
+
+/**
+ * Any free-text message ("hi") from an unauthorized user files an access
+ * request the same way /start does, so the admin doesn't need the user to
+ * find and tap the "Request access" button.
+ */
+export async function handleImplicitAccessRequest(
+  ctx: BotContext,
+): Promise<void> {
+  const userId = ctx.from?.id;
+  if (!userId || isAdmin(userId) || hasGateAccess(userId)) return;
+
+  const result = await ensureAccessRequested(ctx.api, ctx.from);
+  if (result === "pending") {
+    await ctx.reply(ctx.t("start-request-pending"));
+  } else if (result === "sent") {
+    await ctx.reply(ctx.t("access-request-sent"));
+  }
 }
 
 export async function handleRequestAccess(
@@ -61,34 +59,14 @@ export async function handleRequestAccess(
   const userId = ctx.from?.id;
   if (!userId) return;
 
-  if (hasGateAccess(userId)) {
+  const result = await ensureAccessRequested(ctx.api, ctx.from);
+  if (result === "already") {
     await ctx.answerCallbackQuery(ctx.t("access-already-authorized"));
     return;
   }
 
-  const name = displayName(ctx);
-  const username = ctx.from?.username ?? null;
-  upsertAccessRequest(userId, name, username);
-
   await ctx.editMessageText(ctx.t("access-request-sent"));
   await ctx.answerCallbackQuery();
-
-  const adminLocale = resolveLocaleFor(config.ADMIN_TELEGRAM_ID);
-  const usernameLine = username
-    ? i18n.t(adminLocale, "access-username-line", { username }) + "\n"
-    : "";
-  const adminMsg = i18n.t(adminLocale, "access-admin-dm", {
-    name,
-    id: userId,
-    usernameLine,
-  });
-
-  await ctx.api.sendMessage(config.ADMIN_TELEGRAM_ID, adminMsg, {
-    parse_mode: "Markdown",
-    reply_markup: new InlineKeyboard()
-      .text(i18n.t(adminLocale, "button-approve"), `approve:${userId}`)
-      .text(i18n.t(adminLocale, "button-deny"), `deny:${userId}`),
-  });
 }
 
 export async function handleApprove(

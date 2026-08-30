@@ -17,6 +17,7 @@ import {
 import {
   handleApprove,
   handleDeny,
+  handleImplicitAccessRequest,
   handleRequestAccess,
   handleStart,
 } from "./handlers/access.ts";
@@ -63,6 +64,10 @@ bot.callbackQuery("request-access", handleRequestAccess);
 bot.callbackQuery(/^approve:(\d+)$/, requireAdmin, handleApprove);
 bot.callbackQuery(/^deny:(\d+)$/, requireAdmin, handleDeny);
 bot.callbackQuery(/^setlang:(\w+)$/, handleLangCallback);
+
+// Any other text (unmatched commands, "hi", etc.) from an unauthorized user
+// files an access request, same as tapping "Request access".
+bot.on("message:text", handleImplicitAccessRequest);
 
 bot.catch((err) => {
   console.error("Bot error:", err);

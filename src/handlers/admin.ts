@@ -9,7 +9,35 @@ export async function handleManage(ctx: BotContext): Promise<void> {
 
 export async function handleAddUser(ctx: BotContext): Promise<void> {
   const args = ctx.match?.toString().trim().split(/\s+/) ?? [];
-  const idStr = args[0];
+  const first = args[0];
+
+  if (first?.startsWith("@")) {
+    const username = first.slice(1);
+    const nameOverride = args.slice(1).join(" ");
+
+    let chat: Awaited<ReturnType<typeof ctx.api.getChat>>;
+    try {
+      chat = await ctx.api.getChat(first);
+    } catch {
+      await ctx.reply(ctx.t("adduser-username-not-found", { username }));
+      return;
+    }
+    if (chat.type !== "private") {
+      await ctx.reply(ctx.t("adduser-username-not-found", { username }));
+      return;
+    }
+
+    const id = chat.id;
+    const resolvedName =
+      nameOverride ||
+      [chat.first_name, chat.last_name].filter(Boolean).join(" ") ||
+      username;
+    addUser(id, resolvedName, chat.username ?? username, config.ADMIN_TELEGRAM_ID);
+    await ctx.reply(ctx.t("adduser-ok", { name: resolvedName, id }));
+    return;
+  }
+
+  const idStr = first;
   const name = args.slice(1).join(" ");
   const id = Number(idStr);
   if (!Number.isInteger(id) || id <= 0 || !name) {

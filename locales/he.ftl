@@ -4,7 +4,6 @@
 # Reply-keyboard button labels.
 button-open = 🚪 פתיחת שער
 button-manage = 👥 ניהול משתמשים
-button-request-access = בקשת גישה
 button-approve = ✅ אישור
 button-deny = ❌ דחייה
 
@@ -12,7 +11,7 @@ button-deny = ❌ דחייה
 start-welcome-admin = ברוכים הבאים, מנהל. לחיצה כאן תפתח את השער או תאפשר ניהול משתמשים.
 start-welcome-user = ההרשאה אושרה. לחיצה כאן תפתח את השער.
 start-request-pending = הבקשה ממתינה לאישור המנהל.
-start-not-authorized = שלום! אין עדיין הרשאה. ניתן לבקש גישה בלחיצה למטה.
+start-not-authorized = שלום! אין עדיין הרשאה. הבקשה שלך נשלחה למנהל — תקבל/י תשובה לאחר הבדיקה.
 
 # Access-request flow
 access-already-authorized = ההרשאה כבר קיימת.
@@ -44,14 +43,15 @@ admin-only = למנהל בלבד.
 admin-manage-help =
   פקודות ניהול:
   /users — רשימת משתמשים מורשים
-  /adduser <מזהה> <שם> — הוספת משתמש ידנית
+  /adduser <מזהה> <שם> או /adduser @username — הוספת משתמש ידנית
   /revoke <מזהה> — שלילת הרשאה
   /gates — רשימת השערים בחשבון Palgate
   /log — 20 האירועים האחרונים
 
 # /adduser
-adduser-usage = שימוש: /adduser <מזהה_טלגרם> <שם>
+adduser-usage = שימוש: /adduser <מזהה_טלגרם> <שם>  או  /adduser @username [שם]
 adduser-ok = ✅ נוסף: {$name} ({$id})
+adduser-username-not-found = לא נמצא @{$username}. על המשתמש לשלוח לבוט הודעה לפחות פעם אחת (או להשתמש במזהה המספרי).
 
 # /revoke
 revoke-usage = שימוש: /revoke <מזהה_טלגרם>
@@ -84,7 +84,7 @@ cmd-start = התחלה
 cmd-open = פתיחת השער
 cmd-lang = שינוי שפה
 cmd-users = רשימת משתמשים מורשים
-cmd-adduser = הוספת משתמש: <מזהה> <שם>
+cmd-adduser = הוספת משתמש: <מזהה> <שם> או @username
 cmd-revoke = שלילת הרשאה: <מזהה>
 cmd-gates = רשימת השערים בחשבון Palgate
 cmd-log = 20 האירועים האחרונים

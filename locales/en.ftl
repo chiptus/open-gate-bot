@@ -6,7 +6,6 @@
 # .ftl file with the same keys.
 button-open = 🚪 Open Gate
 button-manage = 👥 Manage Users
-button-request-access = Request access
 button-approve = ✅ Approve
 button-deny = ❌ Deny
 
@@ -14,7 +13,7 @@ button-deny = ❌ Deny
 start-welcome-admin = Welcome, admin. Tap to open the gate or manage users.
 start-welcome-user = You're authorized. Tap below to open the gate.
 start-request-pending = Your request is pending admin approval.
-start-not-authorized = Hi! You're not authorized yet. Tap below to request access.
+start-not-authorized = Hi! You're not authorized yet. I've sent your request to the admin — you'll hear back once it's reviewed.
 
 # Access-request flow
 access-already-authorized = You're already authorized.
@@ -46,14 +45,15 @@ admin-only = Admin only.
 admin-manage-help =
   Admin commands:
   /users — list authorized users
-  /adduser <id> <name> — add user manually
+  /adduser <id> <name> or /adduser @username — add user manually
   /revoke <id> — revoke access
   /gates — list gates on your Palgate account
   /log — last 20 events
 
 # /adduser
-adduser-usage = Usage: /adduser <telegram_id> <name>
+adduser-usage = Usage: /adduser <telegram_id> <name>  or  /adduser @username [name]
 adduser-ok = ✅ Added {$name} ({$id})
+adduser-username-not-found = Couldn't find @{$username}. They need to have messaged the bot at least once (or use their numeric ID instead).
 
 # /revoke
 revoke-usage = Usage: /revoke <telegram_id>
@@ -86,7 +86,7 @@ cmd-start = Get started
 cmd-open = Open the gate
 cmd-lang = Change your language
 cmd-users = List authorized users
-cmd-adduser = Add a user: <id> <name>
+cmd-adduser = Add a user: <id> <name> or @username
 cmd-revoke = Revoke a user: <id>
 cmd-gates = List gates on your Palgate account
 cmd-log = Last 20 open events
