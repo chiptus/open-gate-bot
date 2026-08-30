@@ -5,6 +5,7 @@ import { getAccessRequest, upsertAccessRequest } from "../db.ts";
 import { config } from "../config.ts";
 import { i18n, resolveLocaleFor } from "../i18n.ts";
 import { hasGateAccess } from "./access.ts";
+import { escapeMarkdown } from "./markdown.ts";
 
 function displayName(from: User): string {
   return (
@@ -22,10 +23,12 @@ async function notifyAdminOfRequest(
 ): Promise<void> {
   const adminLocale = resolveLocaleFor(config.ADMIN_TELEGRAM_ID);
   const usernameLine = username
-    ? i18n.t(adminLocale, "access-username-line", { username }) + "\n"
+    ? i18n.t(adminLocale, "access-username-line", {
+        username: escapeMarkdown(username),
+      }) + "\n"
     : "";
   const adminMsg = i18n.t(adminLocale, "access-admin-dm", {
-    name,
+    name: escapeMarkdown(name),
     id: String(userId),
     usernameLine,
   });

@@ -2,6 +2,7 @@ import { addUser, listActiveUsers, recentEvents, revokeUser } from "../db.ts";
 import { config } from "../config.ts";
 import { deviceDisplayName, deviceId, listDevices } from "../palgate/client.ts";
 import type { BotContext } from "../i18n.ts";
+import { escapeMarkdown } from "../lib/markdown.ts";
 
 export async function handleManage(ctx: BotContext): Promise<void> {
   await ctx.reply(ctx.t("admin-manage-help"));
@@ -74,7 +75,7 @@ export async function handleUsers(ctx: BotContext): Promise<void> {
   }
   const lines = users.map(
     (u) =>
-      `• ${u.name} — \`${u.telegram_id}\`${u.username ? ` (@${u.username})` : ""}`,
+      `• ${escapeMarkdown(u.name)} — \`${u.telegram_id}\`${u.username ? ` (@${escapeMarkdown(u.username)})` : ""}`,
   );
   await ctx.reply(`${ctx.t("users-header")}\n${lines.join("\n")}`, {
     parse_mode: "Markdown",
@@ -113,7 +114,7 @@ export async function handleGates(ctx: BotContext): Promise<void> {
         );
       }
       const statusLine = status.length ? `\n  ${status.join(" · ")}` : "";
-      return `• ${deviceDisplayName(d)}${marker}\n  \`${id}\`${statusLine}`;
+      return `• ${escapeMarkdown(deviceDisplayName(d))}${marker}\n  \`${id}\`${statusLine}`;
     });
     await ctx.reply(`${ctx.t("gates-header")}\n\n${lines.join("\n")}`, {
       parse_mode: "Markdown",
