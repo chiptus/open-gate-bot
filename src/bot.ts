@@ -22,6 +22,7 @@ import {
   handleStart,
 } from "./handlers/access.ts";
 import { handleLang, handleLangCallback } from "./handlers/lang.ts";
+import { handleVersion } from "./handlers/version.ts";
 import { loadGateInfo } from "./lib/gateInfo.ts";
 import { requireAdmin, requireGateAccess } from "./middleware/access.ts";
 
@@ -50,6 +51,7 @@ bot.use(async (ctx, next) => {
 bot.command("start", handleStart);
 bot.command("open", requireGateAccess, handleOpen);
 bot.command("lang", handleLang);
+bot.command("version", handleVersion);
 bot.command("adduser", requireAdmin, handleAddUser);
 bot.command("revoke", requireAdmin, handleRevoke);
 bot.command("users", requireAdmin, handleUsers);

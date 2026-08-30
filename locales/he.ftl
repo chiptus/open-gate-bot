@@ -83,8 +83,12 @@ alert-palgate-auth-daily = אסימון Palgate נדחה בבדיקה היומי
 cmd-start = התחלה
 cmd-open = פתיחת השער
 cmd-lang = שינוי שפה
+cmd-version = הצגת הגרסה המותקנת
 cmd-users = רשימת משתמשים מורשים
 cmd-adduser = הוספת משתמש: <מזהה> <שם> או @username
 cmd-revoke = שלילת הרשאה: <מזהה>
 cmd-gates = רשימת השערים בחשבון Palgate
 cmd-log = 20 האירועים האחרונים
+
+# הודעת /version
+version-info = 🛠 {$branch} @ {$commit}

@@ -85,8 +85,12 @@ alert-palgate-auth-daily = Palgate token rejected on daily check (HTTP {$status}
 cmd-start = Get started
 cmd-open = Open the gate
 cmd-lang = Change your language
+cmd-version = Show the deployed version
 cmd-users = List authorized users
 cmd-adduser = Add a user: <id> <name> or @username
 cmd-revoke = Revoke a user: <id>
 cmd-gates = List gates on your Palgate account
 cmd-log = Last 20 open events
+
+# /version reply
+version-info = 🛠 {$branch} @ {$commit}

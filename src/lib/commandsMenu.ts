@@ -6,6 +6,7 @@ const DEFAULT_COMMANDS = [
   { command: "start", key: "cmd-start" },
   { command: "open", key: "cmd-open" },
   { command: "lang", key: "cmd-lang" },
+  { command: "version", key: "cmd-version" },
 ] as const;
 
 const ADMIN_COMMANDS = [
