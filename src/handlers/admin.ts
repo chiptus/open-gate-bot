@@ -38,7 +38,9 @@ export async function handleAddUser(ctx: BotContext): Promise<void> {
       chat.username ?? username,
       config.ADMIN_TELEGRAM_ID,
     );
-    await ctx.reply(ctx.t("adduser-ok", { name: resolvedName, id }));
+    await ctx.reply(
+      ctx.t("adduser-ok", { name: resolvedName, id: String(id) }),
+    );
     return;
   }
 
@@ -50,7 +52,7 @@ export async function handleAddUser(ctx: BotContext): Promise<void> {
     return;
   }
   addUser(id, name, null, config.ADMIN_TELEGRAM_ID);
-  await ctx.reply(ctx.t("adduser-ok", { name, id }));
+  await ctx.reply(ctx.t("adduser-ok", { name, id: String(id) }));
 }
 
 export async function handleRevoke(ctx: BotContext): Promise<void> {
@@ -61,7 +63,7 @@ export async function handleRevoke(ctx: BotContext): Promise<void> {
     return;
   }
   revokeUser(id);
-  await ctx.reply(ctx.t("revoke-ok", { id }));
+  await ctx.reply(ctx.t("revoke-ok", { id: String(id) }));
 }
 
 export async function handleUsers(ctx: BotContext): Promise<void> {

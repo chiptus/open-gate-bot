@@ -87,7 +87,7 @@ export async function handleApprove(
   setRequestStatus(id, "approved");
 
   await ctx.editMessageText(
-    ctx.t("access-approved-ack", { name: req.name, id }),
+    ctx.t("access-approved-ack", { name: req.name, id: String(id) }),
   );
   await ctx.answerCallbackQuery();
 
@@ -111,6 +111,6 @@ export async function handleDeny(
     return;
   }
   setRequestStatus(id, "denied");
-  await ctx.editMessageText(ctx.t("access-denied-ack", { id }));
+  await ctx.editMessageText(ctx.t("access-denied-ack", { id: String(id) }));
   await ctx.answerCallbackQuery();
 }

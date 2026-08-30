@@ -26,7 +26,7 @@ async function notifyAdminOfRequest(
     : "";
   const adminMsg = i18n.t(adminLocale, "access-admin-dm", {
     name,
-    id: userId,
+    id: String(userId),
     usernameLine,
   });
 
